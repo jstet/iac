@@ -7,6 +7,8 @@ services:
     build: ./
     ports:
       - 8000
+    environment:
+    - PRODUCTION=True
     labels:
       caddy: "{{ domain }}"
       caddy.reverse_proxy: "{% raw %}{{upstreams 8000}}{% endraw %}"

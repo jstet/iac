@@ -6,11 +6,11 @@
   ansible.builtin.git:
     repo: 'https://github.com/jstet/{{  app  }}.git'
     dest: /home/{{  ansible_user   }}/{{  app  }}
+    force: yes
 
 - name: Set domain as a fact
   set_fact:
     domain: "{{  app  }}.jstet.net"
-
 
 - name: Template docker compose to server
   template:
