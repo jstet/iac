@@ -1,1 +1,1 @@
-# IaC and tools for the server I use to deploy person projects
+# IaC and tools for the server I use to deploy personal projects
