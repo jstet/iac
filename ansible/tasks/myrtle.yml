@@ -1,0 +1,19 @@
+- name: "Set variables"
+  set_fact:
+    app_name: myrtle
+
+- name: Git checkout
+  ansible.builtin.git:
+    repo: 'https://github.com/jstet/{{  app_name  }}.git'
+    dest: /home/{{  ansible_user   }}/{{  app_name  }}
+
+- name: Template docker compose to server
+  template:
+    vars:
+      domain: basel-viz.jstet.net
+    src: "templates/{{  app_name  }}-docker-compose.yml"
+    dest: "/home/{{  ansible_user   }}/{{  app_name  }}/docker-compose.yml"
+
+- name: deploying app
+  shell: |
+    cd /home/{{  ansible_user   }}/{{  app_name  }} && docker compose build --no-cache && docker compose up -d

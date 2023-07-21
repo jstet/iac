@@ -1,0 +1,22 @@
+- name: Log app name
+  debug:
+    var: app
+
+- name: Git checkout
+  ansible.builtin.git:
+    repo: 'https://github.com/jstet/{{  app  }}.git'
+    dest: /home/{{  ansible_user   }}/{{  app  }}
+
+- name: Set domain as a fact
+  set_fact:
+    domain: "{{  app  }}.jstet.net"
+
+
+- name: Template docker compose to server
+  template:
+    src: "templates/{{  app  }}-docker-compose.yml"
+    dest: "/home/{{  ansible_user   }}/{{  app  }}/docker-compose.yml"
+
+- name: deploying app
+  shell: |
+    cd /home/{{  ansible_user   }}/{{  app  }} && docker compose build --no-cache && docker compose up -d
