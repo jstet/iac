@@ -1,20 +1,13 @@
-- name: Log app name
-  debug:
-    var: app
+- name: Create dir for ti stack
+    file:
+      path: "/home/{{  ansible_user   }}/ti-stack"
+      state: directory
+      owner: "{{  ansible_user   }}"
+      mode: 0775
 
-- name: Git checkout
-  ansible.builtin.git:
-    repo: 'https://github.com/jstet/{{  app  }}.git'
-    dest: /home/{{  ansible_user   }}/{{  app  }}
-    force: yes
-
-- name: Set domain as a fact
-  set_fact:
-    domain: "{{  app  }}.jstet.net"
-
-- name: Template docker compose to server
+- name: Copy docker compose to server
   template:
-    src: "templates/{{  app  }}-docker-compose.yml"
+    src: "files/{{  app  }}-docker-compose.yml"
     dest: "/home/{{  ansible_user   }}/{{  app  }}/docker-compose.yml"
 
 - name: deploying app

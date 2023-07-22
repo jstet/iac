@@ -134,6 +134,15 @@ resource "hetznerdns_record" "main" {
   ttl     = 60
 }
 
+resource "hetznerdns_record" "influx" {
+  name      = "influx"
+  zone_id = data.hetznerdns_zone.dns_zone.id
+  value   = hcloud_server.main.ipv4_address
+  type    = "A"
+  ttl     = 60
+}
+
+
 #####################
 
 # writing data to files for ansible

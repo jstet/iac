@@ -1,0 +1,41 @@
+- name: "Set variables"
+  set_fact:
+    app_name: ti-stack
+
+- name: Create dir for ti stack
+  file:
+    path: "/home/{{  ansible_user   }}/{{  app_name  }}"
+    state: directory
+    owner: "{{  ansible_user   }}"
+    mode: 0775
+
+- name: Create dir for telegraf conf
+  file:
+    path: "/home/{{  ansible_user   }}/{{  app_name  }}/telegraf"
+    state: directory
+    owner: "{{  ansible_user   }}"
+    mode: 0775
+
+- name: template .env to server
+  template:
+    src: "templates/.env.jinja"
+    dest: "/home/{{  ansible_user   }}/{{  app_name  }}/.env"
+
+- name: copy entry script to server
+  copy:
+    src: "files/entrypoint.sh"
+    dest: "/home/{{  ansible_user   }}/{{  app_name  }}/entrypoint.sh"
+
+- name: copy telegraf config to server
+  copy:
+    src: files/telegraf.conf
+    dest: "/home/{{  ansible_user   }}/{{  app_name  }}/telegraf/telegraf.conf"
+
+- name: copy telegraf docker compose to server
+  copy:
+    src: "files/{{  app_name }}-docker-compose.yml"
+    dest: "/home/{{  ansible_user   }}/{{  app_name }}/docker-compose.yml"
+
+- name: deploying app
+  shell: |
+    cd /home/{{  ansible_user   }}/{{  app_name  }} && docker compose build --no-cache && docker compose up -d
