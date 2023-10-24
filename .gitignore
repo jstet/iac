@@ -7,6 +7,8 @@ vault.yml
 # Local .terraform directories
 **/.terraform/*
 
+.vscode/*
+
 # .tfstate files
 *.tfstate
 *.tfstate.*
