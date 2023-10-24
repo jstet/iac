@@ -10,12 +10,22 @@ services:
     environment:
     - PRODUCTION=True
     labels:
-      caddy: "{{ domain }}"
-      caddy.reverse_proxy: "{% raw %}{{upstreams 8000}}{% endraw %}"
+      - "traefik.enable=true"
+      - "traefik.http.services.myrtle.loadbalancer.server.port=8000"
+      - "traefik.docker.network=traefik_network"
+      # https
+      - "traefik.http.routers.myrtle.rule=Host(`{{  domain  }}`)"
+      - "traefik.http.routers.myrtle.tls=true"
+      - "traefik.http.routers.myrtle.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.myrtle.entrypoints=websecure"
+      # http (redirect to https)
+      - "traefik.http.routers.myrtle-http.rule=Host(`{{  domain  }}`)"
+      - "traefik.http.routers.myrtle-http.entrypoints=web"
+      - "traefik.http.routers.myrtle-http.middlewares=redirect-to-https@file"
     networks:
-      - caddy
+      - traefik_network
 
 networks:
-  caddy:
+  traefik_network:
     external: true
 

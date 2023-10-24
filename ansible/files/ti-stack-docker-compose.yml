@@ -12,11 +12,21 @@ services:
     ports:
       - 8086
     networks:
-      - caddy
+      - traefik_network
       - influxdb_network
     labels:
-      caddy: "influx.jstet.net"
-      caddy.reverse_proxy: "{{upstreams 8086}}"
+      - "traefik.enable=true"
+      - "traefik.http.services.tistack.loadbalancer.server.port=8086"
+      - "traefik.docker.network=traefik_network"
+      # https
+      - "traefik.http.routers.tistack.rule=Host(`influx.jstet.net`)"
+      - "traefik.http.routers.tistack.tls=true"
+      - "traefik.http.routers.tistack.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.tistack.entrypoints=websecure"
+      # http (redirect to https)
+      - "traefik.http.routers.tistack-http.rule=Host(`influx.jstet.net`)"
+      - "traefik.http.routers.tistack-http.entrypoints=web"
+      - "traefik.http.routers.tistack-http.middlewares=redirect-to-https@file"
 
   telegraf:
     image: telegraf:1.19
@@ -30,7 +40,6 @@ services:
     networks:
       - influxdb_network
     user: telegraf:1000
-    command: sh -c "chmod 600 /etc/telegraf/telegraf.conf && telegraf"
     restart: on-failure:10
 
 volumes:
@@ -38,6 +47,6 @@ volumes:
 
 
 networks:
-  caddy:
+  traefik_network:
     external: true
   influxdb_network:

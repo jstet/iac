@@ -47,29 +47,60 @@
     #   ansible.builtin.reboot:
     #   become: true
 
-    # - name: Create dir for caddy
-    #   file:
-    #     path: "/home/{{  ansible_user   }}/caddy"
-    #     state: directory
-    #     owner: "{{  ansible_user   }}"
-    #     mode: 0775
+    - name: Create dir for traefik
+      file:
+        path: "/home/{{  ansible_user   }}/traefik"
+        state: directory
+        owner: "{{  ansible_user   }}"
+        mode: 0775
 
-    # - name: copy caddy docker compose to server
-    #   copy:
-    #     src: files/caddy-docker-compose.yml
-    #     dest: "/home/{{  ansible_user   }}/caddy/docker-compose.yml"
+    - name: copy traefik docker compose to server
+      copy:
+        src: files/traefik-docker-compose.yml
+        dest: "/home/{{  ansible_user   }}/traefik/docker-compose.yml"
 
-    # - name: creating network for caddy
-    #   shell: |
-    #     docker network inspect caddy >/dev/null 2>&1 || \
-    #     docker network create caddy
-
-    # - name: deploying caddy
-    #   shell: |
-    #     cd caddy && docker compose up -d
+    - name: Create dir for traefik certs
+      file:
+        path: "/home/{{  ansible_user   }}/traefik/certificates"
+        state: directory
+        owner: "{{  ansible_user   }}"
+        mode: 0775
     
-    # - name: deploy ti stack (telegraf, influxdb)
-    #   ansible.builtin.include_tasks: "tasks/deploy_ti.yml"
+    - name: copy cert
+      copy:
+        dest: "/home/{{  ansible_user   }}/traefik/certificates/acme.json"
+        src: files/certificates/acme.json
+        mode: "0600"
+        force: no
+    
+    - name: Create dir for traefik config
+      file:
+        path: "/home/{{  ansible_user   }}/traefik/configs/"
+        state: directory
+        owner: "{{  ansible_user   }}"
+        mode: 0775
+    
+    - name: Copy traefik.yml
+      copy:
+        src: files/configs/traefik.yml
+        dest: "/home/{{  ansible_user   }}/traefik/configs/traefik.yml"
+    
+    - name: Copy dynamic folder
+      copy:
+        src: files/configs/dynamic
+        dest: "/home/{{  ansible_user   }}/traefik/configs"
+    
+    - name: create traefik network
+      shell: |
+        docker network inspect traefik_network >/dev/null 2>&1 || \
+        docker network create traefik_network
+
+    - name: deploying traefik
+      shell: |
+        cd traefik && docker compose down  && docker compose up -d 
+    
+    - name: deploy ti stack (telegraf, influxdb)
+      ansible.builtin.include_tasks: "tasks/deploy_ti.yml"
 
     - name: Deploy apps
       ansible.builtin.include_tasks: "tasks/deploy.yml"

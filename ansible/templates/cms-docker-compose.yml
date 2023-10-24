@@ -29,10 +29,10 @@ services:
     container_name: directus
     image: directus/directus:10.7.0 
     ports:
-      - 8055:8055
+      - 8055
     networks:
       - directus
-      - caddy
+      - traefik_network
     depends_on:
       - directus-cache
      
@@ -72,13 +72,23 @@ services:
     volumes:
       - directus_storage:/directus/uploads
     labels:
-      caddy: "{{ domain }}"
-      caddy.reverse_proxy: "{{"{{upstreams 8055}}"}}"
+      - "traefik.enable=true"
+      - "traefik.http.services.directus.loadbalancer.server.port=8055"
+      - "traefik.docker.network=traefik_network"
+      # https
+      - "traefik.http.routers.directus.rule=Host(`{{  domain  }}`)"
+      - "traefik.http.routers.directus.tls=true"
+      - "traefik.http.routers.directus.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.directus.entrypoints=websecure"
+      # http (redirect to https)
+      - "traefik.http.routers.directus-http.rule=Host(`{{  domain  }}`)"
+      - "traefik.http.routers.directus-http.entrypoints=web"
+      - "traefik.http.routers.directus-http.middlewares=redirect-to-https@file"
 
   
 
 networks:
-  caddy:
+  traefik_network:
     external: true
   directus:
 
