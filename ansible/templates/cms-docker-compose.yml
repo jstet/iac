@@ -22,6 +22,7 @@ services:
       POSTGRES_USER: 'directus'
       POSTGRES_PASSWORD: 'directus'
       POSTGRES_DB: 'directus'
+    restart: always
 
   directus:
     restart: always

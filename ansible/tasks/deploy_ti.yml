@@ -30,6 +30,7 @@
   copy:
     src: files/telegraf.conf
     dest: "/home/{{  ansible_user   }}/{{  app_name  }}/telegraf/telegraf.conf"
+    mode: '0664'
 
 - name: copy telegraf docker compose to server
   copy:

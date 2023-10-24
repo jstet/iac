@@ -30,6 +30,8 @@ services:
     networks:
       - influxdb_network
     user: telegraf:1000
+    command: sh -c "chmod 600 /etc/telegraf/telegraf.conf && telegraf"
+    restart: on-failure:10
 
 volumes:
   influxdb-storage:
