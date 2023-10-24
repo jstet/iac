@@ -5,7 +5,7 @@ variable "server" {
   default = {
     name        = "jstet"
     server_type = "cx41"
-    image       = "ubuntu-20.04"
+    image       = "ubuntu-22.04"
     location    = "hel1"
     backups     =  "false" 
     user = "deploy_user"
@@ -33,7 +33,7 @@ variable "zone" {
 
 variable "subdomains"{
   type = set(string)
-  default = ["myrtle","basel-viz"]
+  default = ["myrtle","basel-viz", "cms"]
 }
 
 

@@ -1,15 +1,25 @@
-- name: Create dir for ti stack
-    file:
-      path: "/home/{{  ansible_user   }}/ti-stack"
-      state: directory
-      owner: "{{  ansible_user   }}"
-      mode: 0775
+- name: Create dir for docker
+  file:
+    path: "/home/{{ ansible_user }}/{{ app }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: 0775
+  when: app == "cms"
+  
+- name: Git clone repository
+  git:
+    repo: "https://github.com/jstet/{{ app }}"
+    dest: "/home/{{ ansible_user }}/{{ app }}"
+    force: true
+  when: app != "cms"
 
 - name: Copy docker compose to server
+  vars:
+    domain: "{{  app  }}.jstet.net"
   template:
-    src: "files/{{  app  }}-docker-compose.yml"
+    src: "templates/{{  app  }}-docker-compose.yml"
     dest: "/home/{{  ansible_user   }}/{{  app  }}/docker-compose.yml"
 
 - name: deploying app
   shell: |
-    cd /home/{{  ansible_user   }}/{{  app  }} && docker compose build --no-cache && docker compose up -d
+    cd /home/{{  ansible_user   }}/{{  app  }} && docker compose build --no-cache && docker compose up -d 

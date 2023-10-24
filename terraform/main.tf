@@ -34,6 +34,7 @@ resource "hcloud_firewall" "firewall" {
     ]
   }
 
+
 }
 
 resource "hcloud_primary_ip" "main" {
