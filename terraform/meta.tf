@@ -8,7 +8,10 @@ terraform {
       source  = "timohirt/hetznerdns"
       version = "2.2.0"
     }
-    
+    scaleway = {
+      source = "scaleway/scaleway"
+      version = "2.31.0"
+    }
     
   }
 }

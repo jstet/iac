@@ -1,0 +1,8 @@
+[Unit]
+Description=Backup CMS
+
+[Service]
+ExecStart=su -c "/home/{{ ansible_user  }}/backup.sh" {{  ansible_user  }}
+
+[Install]
+WantedBy=multi-user.target

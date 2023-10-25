@@ -85,8 +85,6 @@ services:
       - "traefik.http.routers.directus-http.entrypoints=web"
       - "traefik.http.routers.directus-http.middlewares=redirect-to-https@file"
 
-  
-
 networks:
   traefik_network:
     external: true

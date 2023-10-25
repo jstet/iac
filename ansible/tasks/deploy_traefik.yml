@@ -1,0 +1,52 @@
+---
+- name: Create dir for traefik
+  file:
+    path: "/home/{{  ansible_user   }}/traefik"
+    state: directory
+    owner: "{{  ansible_user   }}"
+    mode: 0775
+
+- name: copy traefik docker compose to server
+  copy:
+    src: files/traefik-docker-compose.yml
+    dest: "/home/{{  ansible_user   }}/traefik/docker-compose.yml"
+
+- name: Create dir for traefik certs
+  file:
+    path: "/home/{{  ansible_user   }}/traefik/certificates"
+    state: directory
+    owner: "{{  ansible_user   }}"
+    mode: 0775
+
+- name: copy cert
+  copy:
+    dest: "/home/{{  ansible_user   }}/traefik/certificates/acme.json"
+    src: files/certificates/acme.json
+    mode: "0600"
+    force: no
+
+- name: Create dir for traefik config
+  file:
+    path: "/home/{{  ansible_user   }}/traefik/configs/"
+    state: directory
+    owner: "{{  ansible_user   }}"
+    mode: 0775
+
+- name: Copy traefik.yml
+  copy:
+    src: files/configs/traefik.yml
+    dest: "/home/{{  ansible_user   }}/traefik/configs/traefik.yml"
+
+- name: Copy dynamic folder
+  copy:
+    src: files/configs/dynamic
+    dest: "/home/{{  ansible_user   }}/traefik/configs"
+
+- name: create traefik network
+  shell: |
+    docker network inspect traefik_network >/dev/null 2>&1 || \
+    docker network create traefik_network
+
+- name: deploying traefik
+  shell: |
+    cd traefik && docker compose down  && docker compose up -d 

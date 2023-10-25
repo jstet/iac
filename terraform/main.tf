@@ -143,6 +143,20 @@ resource "hetznerdns_record" "influx" {
   ttl     = 60
 }
 
+################### Create a bucket for backups etc
+
+resource "scaleway_object_bucket" "main" {
+  name = "jstetiac"
+  region = "fr-par"
+  tags = {
+    key = "jstetiac"
+  }
+}
+
+resource "scaleway_object_bucket_acl" "main" {
+  bucket = scaleway_object_bucket.main.name
+  acl = "private"
+}
 
 #####################
 
@@ -159,9 +173,39 @@ resource "local_file" "ansible_inventory" {
   filename = "../ansible/hosts"
 }
 
+resource "local_sensitive_file" "vault" {
+  content = templatefile("vault.tmpl", {
+    directus_admin_mail              = var.directus_admin_mail
+    directus_admin_pw                = var.directus_admin_pw
+    smtp_user                        = var.smtp_user
+    smtp_password                    = var.smtp_password
+    smtp_host                        = var.smtp_host
+    smtp_port                        = var.smtp_port
+    directus_key                     = var.directus_key
+    directus_secret                  = var.directus_secret
+    docker_influxdb_init_password    = var.docker_influxdb_init_password
+    docker_influxdb_init_admin_token = var.docker_influxdb_init_admin_token
+    grub_user_pass_hash              = var.grub_user_pass_hash
+    grub_user_pass_pw                = var.grub_user_pass_pw
+    s3_endpoint                      = scaleway_object_bucket.main.endpoint
+    s3_bucket                        = scaleway_object_bucket.main.name
+    s3_region                        = scaleway_object_bucket.main.region
+    s3_access_key                    = var.s3_access_key
+    s3_secret_key                    = var.s3_secret_key
+  })
+  filename = "../ansible/group_vars/vault.yml"
+
+  provisioner "local-exec" {
+    command = "ansible-vault encrypt ${self.filename} --vault-password-file ../ansible/.vault_pw"
+  }
+}
+
+
 resource "local_file" "group_vars" {
   content  = templatefile("group_vars.tmpl", {
     subdomains = jsonencode(tolist(var.subdomains))
   })
   filename = "../ansible/group_vars/main.yml"
 }
+
+

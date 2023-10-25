@@ -1,0 +1,42 @@
+---
+- name: Install mc
+  ansible.builtin.shell: |
+    cd /usr/local/bin
+    wget https://dl.min.io/client/mc/release/linux-amd64/mc 
+    chmod a+x mc
+  become: true
+
+- name: template backup_script to server
+  template:
+    src: templates/scripts/backup.sh
+    dest: "/home/{{  ansible_user   }}/backup.sh"
+    mode: a+x
+
+- name: create dir for temp storage for backup
+  file:
+    path: "/home/{{  ansible_user   }}/db_backup"
+    state: directory
+    owner: "{{  ansible_user   }}"
+    mode: 0775
+
+- name: template backup_script service to server
+  template:
+    src: templates/backup/backup.service
+    dest: "/etc/systemd/system/backup.service"
+  become: true
+
+- name: template backup_script timer service to server
+  template:
+    src: files/backup/backup.timer
+    dest: "/etc/systemd/system/backup.timer"
+  become: true
+
+- name: Enable and run services
+  shell: |
+    systemctl daemon-reload
+    systemctl enable backup.service
+    systemctl enable backup.timer
+    systemctl start backup.service
+    systemctl start backup.timer
+    systemctl status backup.service
+  become: true

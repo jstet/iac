@@ -7,108 +7,61 @@
     - group_vars/vault.yml
 
   tasks:
-    - block:
-      - name: Configure server to be CIS compliant
-        include_role:
-          name: ansible-lockdown.ubuntu22-cis
-        vars:
-          # https://github.com/ansible-lockdown/ubtu22-CIS/blob/devel/defaults/main.yml
-          ubtu22cis_section1_patch: true
-          ubtu22cis_section2_patch: true
-          # firewall is handled by Hetzner, docker and firewalls is tricky
-          ubtu22cis_section3_patch: false
-          ubtu22cis_section4_patch: true
-          ubtu22cis_section5_patch: true
-          ubtu22cis_section6_patch: false
-          ubtu22cis_rule_1_1_1_2: false
-          ubtu22cis_rule_5_3_4: false
-          ubtu22cis_sshd:
-            log_level: "INFO"
-            max_auth_tries: 4
-            client_alive_interval: 299
-            client_alive_count_max: 2
-            ciphers: "chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr"
-            macs: "hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256"
-            kex_algorithms: "curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256"
-            login_grace_time: 59
-            max_sessions: 2
-            allow_users: "{{ ansible_user }}"
-            deny_users: []
-            deny_groups: []
-          ubtu22cis_ipv4_required: true
-          ubtu22cis_no_owner_adjust: false
-          ubtu22cis_no_group_adjust: false
-          ubtu22cis_set_boot_pass: false
-          ubtu22cis_set_grub_user_pass: true
-          ubtu22cis_grub_user_passwd: "{{  grub_user_pass_hash }}"
-      become: true
+    # - block:
+    #   - name: Configure server to be CIS compliant
+    #     include_role:
+    #       name: ansible-lockdown.ubuntu22-cis
+    #     vars:
+    #       # https://github.com/ansible-lockdown/ubtu22-CIS/blob/devel/defaults/main.yml
+    #       ubtu22cis_section1_patch: true
+    #       ubtu22cis_section2_patch: true
+    #       # firewall is handled by Hetzner, docker and firewalls is tricky
+    #       ubtu22cis_section3_patch: false
+    #       ubtu22cis_section4_patch: true
+    #       ubtu22cis_section5_patch: true
+    #       ubtu22cis_section6_patch: false
+    #       ubtu22cis_rule_1_1_1_2: false
+    #       ubtu22cis_rule_5_3_4: false
+    #       ubtu22cis_sshd:
+    #         log_level: "INFO"
+    #         max_auth_tries: 4
+    #         client_alive_interval: 299
+    #         client_alive_count_max: 2
+    #         ciphers: "chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr"
+    #         macs: "hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256"
+    #         kex_algorithms: "curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256"
+    #         login_grace_time: 59
+    #         max_sessions: 2
+    #         allow_users: "{{ ansible_user }}"
+    #         deny_users: []
+    #         deny_groups: []
+    #       ubtu22cis_ipv4_required: true
+    #       ubtu22cis_no_owner_adjust: false
+    #       ubtu22cis_no_group_adjust: false
+    #       ubtu22cis_set_boot_pass: false
+    #       ubtu22cis_set_grub_user_pass: true
+    #       ubtu22cis_grub_user_passwd: "{{  grub_user_pass_hash }}"
+    #   become: true
 
-    - name: Unconditionally reboot the machine with all defaults
-      ansible.builtin.reboot:
-      become: true
+    # - name: Unconditionally reboot the machine with all defaults
+    #   ansible.builtin.reboot:
+    #   become: true
 
-    - name: Create dir for traefik
-      file:
-        path: "/home/{{  ansible_user   }}/traefik"
-        state: directory
-        owner: "{{  ansible_user   }}"
-        mode: 0775
+    # - name: deploy traefik
+    #   ansible.builtin.include_tasks: "tasks/deploy_traefik.yml"
 
-    - name: copy traefik docker compose to server
-      copy:
-        src: files/traefik-docker-compose.yml
-        dest: "/home/{{  ansible_user   }}/traefik/docker-compose.yml"
+    # - name: deploy ti stack (telegraf, influxdb)
+    #   ansible.builtin.include_tasks: "tasks/deploy_ti.yml"
 
-    - name: Create dir for traefik certs
-      file:
-        path: "/home/{{  ansible_user   }}/traefik/certificates"
-        state: directory
-        owner: "{{  ansible_user   }}"
-        mode: 0775
-    
-    - name: copy cert
-      copy:
-        dest: "/home/{{  ansible_user   }}/traefik/certificates/acme.json"
-        src: files/certificates/acme.json
-        mode: "0600"
-        force: no
-    
-    - name: Create dir for traefik config
-      file:
-        path: "/home/{{  ansible_user   }}/traefik/configs/"
-        state: directory
-        owner: "{{  ansible_user   }}"
-        mode: 0775
-    
-    - name: Copy traefik.yml
-      copy:
-        src: files/configs/traefik.yml
-        dest: "/home/{{  ansible_user   }}/traefik/configs/traefik.yml"
-    
-    - name: Copy dynamic folder
-      copy:
-        src: files/configs/dynamic
-        dest: "/home/{{  ansible_user   }}/traefik/configs"
-    
-    - name: create traefik network
-      shell: |
-        docker network inspect traefik_network >/dev/null 2>&1 || \
-        docker network create traefik_network
+    # - name: Deploy apps
+    #   ansible.builtin.include_tasks: "tasks/deploy.yml"
+    #   # set by terraform, corresponds to subdomains
+    #   loop: "{{ domains }}"
+    #   loop_control:
+    #     loop_var: app
 
-    - name: deploying traefik
-      shell: |
-        cd traefik && docker compose down  && docker compose up -d 
-    
-    - name: deploy ti stack (telegraf, influxdb)
-      ansible.builtin.include_tasks: "tasks/deploy_ti.yml"
-
-    - name: Deploy apps
-      ansible.builtin.include_tasks: "tasks/deploy.yml"
-      # set by terraform, corresponds to subdomains
-      loop: "{{ domains }}"
-      loop_control:
-        loop_var: app
-
+    - name: config auto backup
+      ansible.builtin.include_tasks: "tasks/auto_backup.yml"
 
 
 

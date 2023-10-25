@@ -36,5 +36,65 @@ variable "subdomains"{
   default = ["myrtle","basel-viz", "cms"]
 }
 
+variable "directus_admin_mail" {
+  type    = string
+}
+
+variable "directus_admin_pw" {
+  type    = string
+}
+
+variable "smtp_user" {
+  type    = string
+}
+
+variable "smtp_password" {
+  type    = string
+}
+
+variable "smtp_host" {
+  type    = string
+}
+
+variable "smtp_port" {
+  type    = string
+}
+
+variable "directus_key" {
+  type    = string
+}
+
+variable "directus_secret" {
+  type    = string
+}
+
+variable "docker_influxdb_init_password" {
+  type    = string
+}
+
+variable "docker_influxdb_init_admin_token" {
+  type    = string
+}
+
+variable "grub_user_pass_hash" {
+  type    = string
+}
+
+variable "grub_user_pass_pw" {
+  type    = string
+}
+
+
+variable "s3_access_key" {
+  type    = string
+}
+
+variable "s3_secret_key" {
+  type    = string
+}
+
+
+
+
 
 
